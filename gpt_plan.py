@@ -214,7 +214,7 @@ if __name__=="__main__":
         yest_date = today - dt.timedelta(days=1)
 
     # 1. 解析昨日任务数据
-    done_y, todo_y = parse_tasks_for_date(yest)
+    done_y, todo_y = parse_tasks_for_date(yest_date)
     total_est   = sum(x['est']   for x in done_y + todo_y)
     total_spent = sum(x['dur']   for x in done_y) + sum(x['spent'] for x in todo_y)
     efficiency  = total_spent / total_est if total_est else 1.0
