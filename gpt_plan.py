@@ -80,6 +80,19 @@ def parse_tasks_for_date(date):
             txt = DUR_TODO.sub("", EST_RE.sub("", txt)).strip()
             todo.append({"text": txt, "est": est, "spent": spent})
     return done, todo
+
+# ---------- 找到最近一份有效日志 ----------
+def find_latest_log(today, max_lookback=7):
+    """
+    向前最多 max_lookback 天，找到最近一份含 TODO/DONE 的日志。
+    返回 (日期, done 列表, todo 列表)；若没找到则 (None, [], [])。
+    """
+    for delta in range(1, max_lookback + 1):
+        date = today - dt.timedelta(days=delta)
+        done, todo = parse_tasks_for_date(date)
+        if done or todo:          # 找到有效记录就返回
+            return date, done, todo
+    return None, [], []           # 超过回溯范围也没找到
     
 # ---------- GPT 生成 ----------
 
@@ -194,7 +207,11 @@ def append_review_to_logseq(review_text):
 if __name__=="__main__":
     # 0. 准备日期
     today = dt.date.today()
-    yest  = today - dt.timedelta(days=1)
+    yest_date, done_y, todo_y = find_latest_log(today, max_lookback=7)
+
+    # 若整整一周都没有日志，则视作“昨天为空”
+    if yest_date is None:
+        yest_date = today - dt.timedelta(days=1)
 
     # 1. 解析昨日任务数据
     done_y, todo_y = parse_tasks_for_date(yest)
